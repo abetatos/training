@@ -1,6 +1,6 @@
 # Stable diffusion
 
-Can stable diffusion be used to retrive images based on text? Let's find it out fine-tuning one stable diffusion based model with some amazing open source libraries.
+Can stable diffusion be used to retrive images based on text? Let's find it out fine-tuning one stable diffusion with some amazing open source libraries.
 
 There has been a new release of a new way of training Large Language Models (LLMs) called Parameter Efficient Fine Tuning ([PEFT](https://huggingface.co/blog/peft)) which can be used to fine tune a transformers model in low resource equipments. Even in Google Colab! 
 
