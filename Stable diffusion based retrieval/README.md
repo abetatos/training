@@ -14,7 +14,7 @@ The pipeline here is:
 # To run the code
 Colab can be used to run the code as I made a jupyter notebook, altough a premium version is needed to give acces to the system shell and run some commands. 
 
-With a GPU it can be run with no problem. 
+A GPU is needed.
 
 
 ### Brief list of main used libraries
