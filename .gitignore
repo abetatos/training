@@ -130,8 +130,9 @@ dmypy.json
 
 # Custom
 .tmp*
-
 .idea/
+wandb/
+
 
 #Models
 *.bin

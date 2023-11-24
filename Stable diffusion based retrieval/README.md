@@ -2,55 +2,51 @@
 
 Can stable diffusion be used to retrieve images based on text? Let's find it out.
 
+The general pipeline consists of a text to image generative model, specifically a diffuser, which will generate an image given a prompt. 
+The next step is to find the most similar image between a set of
 
 LoRA: Low-Rank Adaptation of Large Language Models
 
+
+> ⚠️ **Warning:** This is only for educational purposes, do not use in production, it is slow as a turtle 🐢
+
 # Installing
-Please run the following lines of code: 
+You only need to install the requirements in order to run the code. 
 
-    git clone https://github.com/huggingface/diffusers
-    cd diffusers
-    pip install .
-    pip install -r ../requirements.txt
+    pip install -r requirements.txt
 
+We added a ```freeze.txt``` file which contains all the libraries and their versions in case you encounter some version problems.
 
-# Runing the code
-
-We decided to do a finetuning of the model "**CompVis/stable-diffusion-v1-4**" with the dataset "**lambdalabs/pokemon-blip-captions**" both provided by huggingface. 
-Note that this step is ***Optional*** as stable diffusion models already work well with a great amount of datasets.
-
-For this matter we have to set the accelerate and huggingface-cli libraries, create a wandb (if wanted) for training tracking and run the training with the code provided.
+Once setted the environment we need to set the configuration for ```accelerate``` and ```huggingface-cli```
 
 Setting up the environment: 
 
     accelerate config
     huggingface-cli login
 
+For tracking we created an account in ```wandb``` but ```tensorboard``` can also be used.
+
+# Runing the code
+
+We decided to do a finetuning of the model "**CompVis/stable-diffusion-v1-4**" with the dataset "**lambdalabs/pokemon-blip-captions**" both provided by huggingface. 
+Note that this step is ***Optional*** as stable diffusion models already work well with a great amount of datasets.
+
+
+
 Run in cmd: 
     
     export MODEL_NAME="CompVis/stable-diffusion-v1-4"
     export DATASET_NAME="lambdalabs/pokemon-blip-captions"
     
-    accelerate launch --mixed_precision="fp16"  train_text_to_image.py \
+    accelerate launch --mixed_precision="fp16" train_text_to_image_lora.py \
       --pretrained_model_name_or_path=$MODEL_NAME \
-      --dataset_name=$DATASET_NAME \
-      --use_ema \
-      --resolution=512 --center_crop --random_flip \
+      --dataset_name=$DATASET_NAME --caption_column="text" \
+      --resolution=512 --random_flip \
       --train_batch_size=1 \
-      --gradient_accumulation_steps=4 \
-      --gradient_checkpointing \
-      --max_train_steps=15000 \
-      --learning_rate=1e-05 \
-      --max_grad_norm=1 \
-      --lr_scheduler="constant" --lr_warmup_steps=0 \
-      --output_dir="sd-pokemon-model" 
+      --num_train_epochs=100 --checkpointing_steps=5000 \
+      --learning_rate=1e-04 --lr_scheduler="constant" --lr_warmup_steps=0 \
+      --seed=42 \
+      --output_dir="sd-pokemon-model-lora" \
+      --validation_prompt="cute dragon creature" --report_to="wandb"
 
-After this a model will be created in ```output_dir``` which we will use for inference. 
-
-
-### Brief list of main used libraries
-- [Transformers](https://huggingface.co/docs/transformers/index)
-- [Datasets](https://huggingface.co/docs/datasets/index) -> We used the labeled Pokémon dataset: [lambdalabs/pokemon-blip-captions](https://huggingface.co/datasets/lambdalabs/pokemon-blip-captions)
-- [Accelerate](https://huggingface.co/docs/accelerate/index)
-- [Torch](https://pytorch.org/)
-
+After this a model will be created in ```output_dir``` which we will use for inference.
