@@ -3,7 +3,7 @@
 Can stable diffusion be used to retrieve images based on text? Let's find it out.
 
 The general pipeline consists of a text to image generative model, specifically a diffuser, which will generate an image given a prompt. 
-The next step is to find the most similar image between a set of
+That image can be used to obtain a similarity score when compared to a dataset, thus obtaining an image retriever based on text.
 
 LoRA: Low-Rank Adaptation of Large Language Models
 
