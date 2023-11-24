@@ -130,3 +130,11 @@ dmypy.json
 
 # Custom
 .tmp*
+
+.idea/
+
+#Models
+*.bin
+*.pt
+*.pkl
+
