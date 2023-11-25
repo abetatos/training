@@ -3,6 +3,7 @@ import os
 
 # Installed imports
 import faiss
+import numpy as np
 from PIL import Image
 from datasets import Dataset
 import matplotlib.pyplot as plt
@@ -15,7 +16,7 @@ TMP_PATH = "tmp/index_file.index"
 
 
 class ImageIndexer:
-    DIM = 2560  # Default value for our EfficientNet
+    DIM = 1280  # Default value for our EfficientNet
 
     def __init__(self, index_path: str, dataset: Dataset, n_items: int = None, reindex: bool = False):
         assert isinstance(index_path, str) and index_path.endswith(".index")
@@ -32,8 +33,12 @@ class ImageIndexer:
         embedds = get_embeddings(images)
         index.add(embedds)
         faiss.write_index(index, self.index_path)
-        self.embedds = embedds
         return index
+
+    def _get_vectors(self):
+        num_vectors = self.index.ntotal
+        vectors = np.zeros((num_vectors, self.index.d), dtype=np.float32)
+        return self.index.reconstruct_n(0, num_vectors, vectors)
 
     def _load_index(self):
         try:
@@ -41,17 +46,22 @@ class ImageIndexer:
         except Exception as e:
             raise ValueError("Please define a valid path or pass the dataset to the class in order to create a new one") from e
 
-    def search_image(self, image: Image, top_k: int = 1):
+    def search_image(self, image: Image, index_image: int, top_k: int = 1):
         embedd = get_embeddings([image])
-        self.embedd = embedd
         distances, indices = self.index.search(embedd[0].reshape(1, -1), top_k)
-        return distances[0], [self.dataset['train']['image'][i] for i in indices[0]]
 
-    def search_image_with_plot(self, image: Image, top_k: int = 1, figsize: tuple = (2, 10)):
-        distances, images = self.search_image(image, top_k)
+        vectors = self._get_vectors()
+        distance_original = np.linalg.norm(vectors[index_image] - embedd[0])**2
+
+        distances = np.append(distances[0], [distance_original])
+        indices = np.append(indices[0], [index_image])
+        return distances, [self.dataset['train']['image'][i] for i in indices]
+
+    def search_image_with_plot(self, image: Image, index_image: int, top_k: int = 1, figsize: tuple = (10, 5)):
+        distances, images = self.search_image(image, index_image, top_k=top_k)
         n_images = len(images)
 
-        fig, axes = plt.subplots(n_images + 1, 1, figsize=figsize)
+        fig, axes = plt.subplots(1, 1 + n_images, figsize=figsize)
         axes[0].imshow(image)
         for i, (dist, im) in enumerate(zip(distances, images)):
             axes[i+1].imshow(im)
